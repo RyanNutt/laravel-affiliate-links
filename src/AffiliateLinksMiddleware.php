@@ -16,7 +16,7 @@ class AffiliateLinksMiddleware {
   public function handle( $request, Closure $next ) {
     $response = $next( $request );
 
-    if ( $request instanceof \Illuminate\Http\Response && $request->isMethod( 'GET' ) && $response->getStatusCode() == 200 ) {
+    if ( $response instanceof \Illuminate\Http\Response && $request->isMethod( 'GET' ) && $response->getStatusCode() == 200 ) {
 
       if ( !empty( config( 'affiliatelinks.environments' ) ) ) {
 
