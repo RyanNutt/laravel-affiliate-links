@@ -1,0 +1,26 @@
+{
+  "name": "aelora/affiliatelinks",
+  "description": "Laravel middleware that adds affiliate tags to matching domain names",
+  "type": "library",
+  "license": "GPL",
+  "authors": [
+    {
+      "name": "Ryan Nutt",
+      "email": "ryan@aelora.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {},
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Aelora\\AffiliateLinks\\AffiliateLinksProvider"
+      ]
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "Aelora\\AffiliateLinks\\": "src/"
+    }
+  }
+}
