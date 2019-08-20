@@ -39,6 +39,7 @@ class AffiliateLinksMiddleware {
 
   private function parseContents( $contents ) {
     $domains = config( 'affiliatelinks.domains' );
+    libxml_use_internal_errors(true);
     $xml = new \DOMDocument();
     $xml->loadHTML( $contents );
 
