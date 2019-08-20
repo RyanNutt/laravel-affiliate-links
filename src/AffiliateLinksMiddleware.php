@@ -39,7 +39,7 @@ class AffiliateLinksMiddleware {
 
   private function parseContents( $contents ) {
     $domains = config( 'affiliatelinks.domains' );
-    libxml_use_internal_errors(true);
+    libxml_use_internal_errors( true );
     $xml = new \DOMDocument();
     $xml->loadHTML( $contents );
 
@@ -78,11 +78,11 @@ class AffiliateLinksMiddleware {
     }
   }
 
-  /** @link https://wp-mix.com/php-add-remove-query-string-variables/ */
+  /** @link https://davidwalsh.name/php-remove-variable#comment-16120 */
   function removeVar( $url, $key ) {
-    $url = preg_replace( '/(.*)(?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&' );
+    $url = preg_replace( '/(.*)(\?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&' );
     $url = substr( $url, 0, -1 );
-    return ($url);
+    return $url;
   }
 
 }
