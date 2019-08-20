@@ -12,7 +12,7 @@ return [
      */
     'replace_existing' => true,
     
-    /* Environments where the links should be replaces.
+    /* Environments where the links should be replaced.
      * 
      * Leave empty to replace in all environments. 
      * 
