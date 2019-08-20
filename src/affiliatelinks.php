@@ -2,16 +2,6 @@
 
 return [
     
-    /* If true, any matching affiliate tags in the original URL will 
-     * be replaced by your tags.
-     * 
-     * For example, if you are appending 'tag=123&other=345' to matching
-     * URLs and the target URL is example.com?s=1&tag=234 then it will
-     * be replaced with example.com?s=1&tag=123&other=345 if this is
-     * set to true or example.com?s=1&tag=234&other=345 if set to false. 
-     */
-    'replace_existing' => true,
-    
     /* Environments where the links should be replaced.
      * 
      * Leave empty to replace in all environments. 

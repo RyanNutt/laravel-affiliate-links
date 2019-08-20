@@ -16,22 +16,25 @@ class AffiliateLinksMiddleware {
   public function handle( $request, Closure $next ) {
     $response = $next( $request );
 
-    if ( !empty( config( 'affiliatelinks.environments' ) ) ) {
+    if ( $request->isMethod( 'GET' ) && $response->getStatusCode() == 200 ) {
 
-      if ( !\App::environment( config( 'affiliatelinks.environments' ) ) ) {
-        return $response;
-      }
-    }
-    $domains = config( 'affiliatelinks.domains' );
-    if ( !empty( $domains ) ) {
-      $contents = $response->getContent();
-      foreach ( $domains as $domain => $tags ) {
-        if ( preg_match( '/' . $domain . '/i', $contents ) ) {
-          $contents = $this->parseContents( $contents );
-          break;
+      if ( !empty( config( 'affiliatelinks.environments' ) ) ) {
+
+        if ( !\App::environment( config( 'affiliatelinks.environments' ) ) ) {
+          return $response;
         }
       }
-      $response->setContent( $contents );
+      $domains = config( 'affiliatelinks.domains' );
+      if ( !empty( $domains ) ) {
+        $contents = $response->getContent();
+        foreach ( $domains as $domain => $tags ) {
+          if ( preg_match( '/' . $domain . '/i', $contents ) ) {
+            $contents = $this->parseContents( $contents );
+            break;
+          }
+        }
+        $response->setContent( $contents );
+      }
     }
 
     return $response;
@@ -39,35 +42,28 @@ class AffiliateLinksMiddleware {
 
   private function parseContents( $contents ) {
     $domains = config( 'affiliatelinks.domains' );
-    libxml_use_internal_errors( true );
-    $xml = new \DOMDocument();
-    $xml->loadHTML( $contents );
 
-    foreach ( $xml->getElementsByTagName( 'a' ) as $link ) {
-      $href = $link->getAttribute( 'href' );
-      $domain = parse_url( $href, PHP_URL_HOST );
-      $domain = preg_replace( '/^www\./i', '', $domain );
-
-      if ( array_key_exists( $domain, $domains ) ) {
-        $tags = $domains[ $domain ];
-        foreach ( explode( '&', $tags ) as $tag ) {
-          $parts = explode( '=', $tag );
-          if ( config( 'affiliatelinks.replace_existing' ) ) {
-            $href = $this->removeVar( $href, $parts[ 0 ] );
-          }
-          $href = $this->addVar( $href, $parts[ 0 ], $parts[ 1 ] );
+    $contents = preg_replace_callback( '/<a(.*?)href="(.*?)"(.*?)>/', function($m) use ($domains) {
+      $original = $m[ 2 ];
+      $m[ 2 ] = html_entity_decode( $m[ 2 ] );
+      $url = preg_replace( '/^www\./i', '', parse_url( $m[ 2 ], PHP_URL_HOST ) );
+      if ( array_key_exists( $url, $domains ) ) {
+        $all_tags = $domains[ $url ];
+        foreach ( explode( '&', $all_tags ) as $tag ) {
+          $tag_info = explode( '=', $tag );
+          $m[ 2 ] = $this->addVar( $m[ 2 ], $tag_info[ 0 ], $tag_info[ 1 ] );
         }
-
-        $link->setAttribute( 'href', $href );
+        return str_replace( $original, $m[ 2 ], $m[ 0 ] );
       }
-    }
+      return $m[ 0 ];
+    }, $contents );
 
-    return $xml->saveHtml();
+    return $contents;
   }
 
   /** @link https://wp-mix.com/php-add-remove-query-string-variables/ */
   private function addVar( $url, $key, $value ) {
-    $url = preg_replace( '/(.*)(?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&' );
+    $url = preg_replace( '/(.*)(\?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&' );
     $url = substr( $url, 0, -1 );
 
     if ( strpos( $url, '?' ) === false ) {
@@ -76,13 +72,6 @@ class AffiliateLinksMiddleware {
     else {
       return ($url . '&' . $key . '=' . $value);
     }
-  }
-
-  /** @link https://davidwalsh.name/php-remove-variable#comment-16120 */
-  function removeVar( $url, $key ) {
-    $url = preg_replace( '/(.*)(\?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&' );
-    $url = substr( $url, 0, -1 );
-    return $url;
   }
 
 }
