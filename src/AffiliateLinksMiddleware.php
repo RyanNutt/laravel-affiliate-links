@@ -33,7 +33,12 @@ class AffiliateLinksMiddleware {
             break;
           }
         }
-        $response->setContent( $contents );
+        try {
+          $response->setContent( $contents );
+        }
+        catch ( \Exception $e ) {
+          // Better that it just stays where it was
+        }
       }
     }
 
